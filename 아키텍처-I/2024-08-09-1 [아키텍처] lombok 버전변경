@@ -1,0 +1,10 @@
+롬복에서 현재 jdk 버전과 맞지 않아 버전을 변경해준다.
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+            <version>1.18.34</version>
+        </dependency>
+
+

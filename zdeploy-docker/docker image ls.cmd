@@ -1,0 +1,1 @@
+docker image ls  changwskr/apigateway-service:1.0

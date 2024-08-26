@@ -1,0 +1,44 @@
+
+pom.xml 등록 - 필터는 적용하지 않는다.
+#-------------------------------------------------------------------------------------------------------
+spring:
+  application:
+    name: apigateway-service
+  cloud:
+    gateway:
+      routes:
+        - id: user-service
+          uri: lb://USER-SERVICE
+          predicates:
+            - Path=/user-service/**
+            - Method=GET
+        - id: user-service
+          uri: lb://USER-SERVICE
+          predicates:
+            - Path=/user-service/login
+            - Method=POST
+        - id: user-service
+          uri: lb://USER-SERVICE
+          predicates:
+            - Path=/user-service/users
+            - Method=POST
+        - id: user-service
+          uri: lb://USER-SERVICE
+          predicates:
+            - Path=/user-service/actuator/**
+            - Method=GET,POST
+
+
+프로그램 수정 @RequestMapping("/user-service") 추가
+#-------------------------------------------------------------------------------------------------------
+@RestController
+@RequestMapping("/user-service")
+public class UserController {
+	private final Logger log = LoggerFactory.getLogger(this.getClass());
+....
+    @GetMapping("/health_check")
+    @Timed(value="users.status", longTask = true)
+    public String status() {
+
+    }
+}

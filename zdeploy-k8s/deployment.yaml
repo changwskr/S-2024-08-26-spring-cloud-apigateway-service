@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-apigatewayservice-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: my-apigatewayservice
+  template:
+    metadata:
+      labels:
+        app: my-apigatewayservice
+    spec:
+      containers:
+        - name: my-apigatewayservice
+          image: changwskr/my-apigatewayservice:latest
+          ports:
+            - containerPort: 8000

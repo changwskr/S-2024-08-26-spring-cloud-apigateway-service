@@ -1,0 +1,69 @@
+application.yaml
+#--------------------------------------------------------------------------------------------------------------
+    server:
+      port: 8000
+    # =================================================================
+    spring:
+      application:
+        name: apigateway-service
+      cloud:
+        gateway:
+          routes:
+    #        - id: first-service
+    #          uri: http://127.0.0.1:8081
+    #          predicates: # (조건절)
+    #            - Path=/first-service/**
+    #        - id: second-service
+    #          uri: http://127.0.0.1:8082
+    #          predicates: # (조건절)
+    #            - Path=/second-service/**
+    #--------------------------------------------------------------------------------------------------------------
+    eureka:
+      instance:
+        hostname: localhost
+      client:
+        register-with-eureka: false
+        fetch-registry: false
+        service-url:
+          defaultZone: http://localhost:8761/eureka
+
+
+FilterConfig.java 등록
+#--------------------------------------------------------------------------------------------------------------
+@Configuration
+public class FilterConfig {
+    @Bean
+    public RouteLocator gatewayRoutes(RouteLocatorBuilder builder) {
+    	
+    	System.out.println("★★★★★★FilterConfig.gatewayRoutes()-호출★★★★★★★");
+    	/*
+    	 *  이 동작들은 application.yml 파일에서 했던 동작들을 기술한것이다.
+    	 */
+        return builder.routes()
+        		// 이런 서비스가 들어오면 이렇게 처리하겠다.
+        				// 패스설정은 다음과 같다.
+                .route(r -> r.path("/first-service/**")
+                						// 리퀘스트 헤더에 다음의 정보를 넣어 주겠다.
+                            .filters(f -> f.addRequestHeader("first-request", "first-request-header")
+                            									// 리스폰스 헤더에 다음의 정보를 넣어 주겠다.
+                                                  .addResponseHeader("first-response", "first-response-header"))
+                            	// 다음의 uri로 넘기겠다.
+                            .uri("http://localhost:8081"))
+
+
+
+FirstServiceController.java 에 다음 메소스 추가
+#--------------------------------------------------------------------------------------------------------------
+    // http://localhost:8081/first-service/message
+    @GetMapping("/message")
+    public String message(@RequestHeader("first-request") String header) {
+        log.info("---->>>" + header);
+        return "Hello World in First Service.";
+    }
+        ---->>>first-request-header
+
+
+    //  .filters(f -> f.addRequestHeader("first-request", "first-request-header")
+
+#--------------------------------------------------------------------------------------------------------------
+등록된 헤더는 크롬에서 개발자 보기에서 response-header에 등록되어 있는 것을 확인가능하다.

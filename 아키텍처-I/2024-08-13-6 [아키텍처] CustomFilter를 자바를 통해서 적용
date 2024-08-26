@@ -1,0 +1,100 @@
+라우팅은 application.yaml 파일을 통해서 할 것이므로 FilterConfig.java에서 라우팅정보를 적용하지 않기 위해 Component를 일단 막는다.
+이후
+Cutom Filter 작업을 위해 CustomFilter 소스를 작성한다. 그리고 CustomFilter 적용을 알기위해
+FirstServiceController에 check 메소스를 작성한다.
+
+
+FilterConfig.java 작업
+#-----------------------------------------------------------------------------------------------------------------------
+//@Configuration
+public class FilterConfig {
+//    @Bean
+    public RouteLocator gatewayRoutes(RouteLocatorBuilder builder) {
+
+
+#-----------------------------------------------------------------------------------------------------------------------
+@Component
+@Slf4j
+public class CustomFilter extends AbstractGatewayFilterFactory<CustomFilter.Config> {
+	private final Logger log = LoggerFactory.getLogger(this.getClass());
+    public CustomFilter() {
+        super(Config.class);
+    }
+
+application.yaml 수정
+#-----------------------------------------------------------------------------------------------------------------------
+spring:
+  application:
+    name: apigateway-service
+  cloud:
+    gateway:
+      default-filters:
+        - name: GlobalFilter
+          args:
+            baseMessage: Spring Cloud Gateway Global Filter
+            preLogger: true
+            postLogger: true
+      routes:
+        - id: first-service
+          uri: http://localhost:8081
+          predicates:
+            - Path=/first-service/**
+          filters:
+
+            - CustomFilter
+        - id: second-service
+          uri: http://localhost:8082
+          predicates:
+            - Path=/second-service/**
+          filters:
+
+            - name: CustomFilter
+            - name: LoggingFilter
+              args:
+                baseMessage: Hi, there.
+                preLogger: true
+                postLogger: true
+
+
+FirstServiceController.java에서 check() 메소드를 추가하자
+#-----------------------------------------------------------------------------------------------------------------------
+@RestController
+@RequestMapping("/first-service")
+//@Slf4j
+public class FirstServiceController {
+
+    // http://localhost:8081/first-service/check
+
+    @GetMapping("/check")
+    public String check(HttpServletRequest request) {
+
+        Enumeration<String> headers = request.getHeaderNames();
+        Collections.list(headers).stream().forEach(name -> {
+            Enumeration<String> values = request.getHeaders(name);
+            Collections.list(values).stream().forEach(value -> System.out.println(name + "=" + value));
+        });
+
+        log.info("--->Server port={}", request.getServerPort());
+        log.info("--->spring.cloud.client.hostname={}", env.getProperty("spring.cloud.client.hostname"));
+        log.info("--->spring.cloud.client.ip-address={}", env.getProperty("spring.cloud.client.ip-address"));
+
+        return String.format("Hi, there. This is a message from First Service on PORT %s"
+                , env.getProperty("local.server.port"));
+    }
+}
+
+
+@RestController
+@RequestMapping("/second-service")
+//@Slf4j
+public class SecondServiceController {
+	private final Logger log = LoggerFactory.getLogger(this.getClass());
+
+
+
+    @GetMapping("/check")
+    public String check() {
+        return "Hi, there. This is a message from Second Service.";
+    }
+}
+

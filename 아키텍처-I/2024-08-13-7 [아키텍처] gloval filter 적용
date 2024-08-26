@@ -1,0 +1,39 @@
+
+GlobalFilter.java 적용
+#-----------------------------------------------------------------------------------
+public class GlobalFilter extends AbstractGatewayFilterFactory<GlobalFilter.Config> {
+	private final Logger log = LoggerFactory.getLogger(this.getClass());
+
+    public GlobalFilter() {
+        super(Config.class);
+    }
+
+    @Override
+    public GatewayFilter apply(Config config) {
+    }
+
+    ...
+}
+
+application.yml
+#-----------------------------------------------------------------------------------
+spring:
+  application:
+    name: apigateway-service
+  cloud:
+    gateway:
+      default-filters:
+        - name: GlobalFilter
+          args:
+            baseMessage: Spring Cloud Gateway Global Filter
+            preLogger: true
+            postLogger: true
+
+실제 args의 설정값은 application.yml 파일에 설정한다.
+
+    @Data
+    public static class Config {
+        private String baseMessage;
+        private boolean preLogger;
+        private boolean postLogger;
+    }

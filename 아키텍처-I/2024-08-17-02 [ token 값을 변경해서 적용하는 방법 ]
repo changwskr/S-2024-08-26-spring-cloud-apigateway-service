@@ -1,0 +1,45 @@
+#--------------------------------------------------------------------------
+[토큰변경]
+C:\Programming(23-08-15)\zRepository\zlogcal-dir>cat ecommerce.yml
+
+        [기존]
+        token:
+          expiration_time: 86400000
+          secret: user_token
+        gateway:
+          ip: 192.168.0.8
+
+        [신규]
+        token:
+          expiration_time: 86400000
+          secret: user_token_changed
+        gateway:
+          ip: 192.168.0.8
+
+
+#--------------------------------------------------------------------------
+[기동 마이크로서비스 확인]
+    - user-service
+    - spring-config-service
+    - eureca-service
+    - gateway-service
+    mvn spring-boot:run
+
+[테스트 절차]
+    1) ecommerce.yaml 파일 수정
+        token 변경
+
+    2) 변경된 토큰에 대한 변경전파를 실시한다.
+        (post)http://localhost:8000/user-service/actuator/refresh
+
+        환경 파일 전파
+        (post)http://localhost:8000/user-service/actuator/refresh
+        (post)http://localhost:8000/actuator/busrefresh
+        (post)http://localhost:8000/user-service/actuator/busrefresh
+
+    3) 헬스체킹
+        http://localhost:8000/user-service/health_check
+        http://localhost:8000/order-service/health_check
+        http://localhost:8000/catalog-service/health_check
+        http://localhost:8000/user-service/actuator/health
+
